@@ -52,7 +52,7 @@ class Stance < ActiveRecord::Base
 
   def choice=(choice)
     sanitize_choice(choice).each do |option_name, score|
-      if option = poll.poll_options.detect { |o| o.name == option_name }
+      if option = poll.reload.poll_options.detect { |o| o.name == option_name }
         stance_choices.build(poll_option: option, score: score)
       elsif poll.stances_add_options
         stance_choices.build(poll_option: poll.poll_options.build(name: option_name), score: score)

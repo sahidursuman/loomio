@@ -29,8 +29,8 @@ describe API::StancesController do
     let(:old_stance) { create :stance, poll: poll, created_at: 5.days.ago, choice: [low_priority_option.name] }
     let(:high_priority_stance) { create :stance, poll: poll, choice: [high_priority_option.name] }
     let(:low_priority_stance) { create :stance, poll: poll, choice: [low_priority_option.name] }
-    let(:high_priority_option) { create(:poll_option, poll: poll, priority: 0) }
-    let(:low_priority_option) { create(:poll_option, poll: poll, priority: 10) }
+    let(:high_priority_option) { create(:poll_option, poll: poll, name: "Plan A", priority: 0) }
+    let(:low_priority_option) { create(:poll_option, poll: poll, name: "Plan B", priority: 10) }
 
     it 'can order by recency asc' do
       sign_in user
