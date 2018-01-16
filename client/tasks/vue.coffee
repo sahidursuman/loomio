@@ -5,7 +5,6 @@ plumber    = require 'gulp-plumber'
 buffer     = require 'vinyl-buffer'
 vueify     = require 'vueify'
 coffeeify  = require 'coffeeify'
-babelify   = require 'babelify'
 uglify     = require('gulp-uglify/composer')(require('uglify-es', console))
 source     = require 'vinyl-source-stream'
 rename     = require 'gulp-rename'
@@ -35,7 +34,7 @@ module.exports =
       .on('error', onError)
       .pipe(uglify())
       .pipe(gulp.dest(paths.dist.assets))
-    pipe gulp.src("#{paths.dist.assets}/vue.bundle.css"), [
+    pipe gulp.src("#{paths.dist.assets}/vue.css"), [
       plumber(errorHandler: onError),
       prefix(browsers: ['> 1%', 'last 2 versions', 'Firefox ESR', 'Safari >= 9'], cascade: false),
       cssmin(),
