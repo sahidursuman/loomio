@@ -1,7 +1,7 @@
 AppConfig = require 'shared/services/app_config.coffee'
 Records   = require 'shared/services/records.coffee'
 
-{ submitStance } = require 'angular/helpers/form.coffee'
+{ submitStance } = require 'shared/helpers/form.coffee'
 
 angular.module('loomioApp').directive 'pollBrainstormVoteForm', ->
   scope: {stance: '='}
