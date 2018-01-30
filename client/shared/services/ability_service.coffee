@@ -33,8 +33,10 @@ module.exports = new class AbilityService
 
   canParticipateInPoll: (poll) ->
     return false unless poll
+    poll.anyoneCanParticipate or
     @canAdministerPoll(poll) or
     !poll.group() or
+    Session.user().isMemberOf(poll.guestGroup()) or
     (Session.user().isMemberOf(poll.group()) and poll.group().membersCanVote)
 
   canReactToPoll: (poll) ->

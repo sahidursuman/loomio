@@ -507,12 +507,6 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-blocking-proxy@0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/blocking-proxy/-/blocking-proxy-0.0.5.tgz#462905e0dcfbea970f41aa37223dda9c07b1912b"
-  dependencies:
-    minimist "^1.2.0"
-
 blocking-proxy@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/blocking-proxy/-/blocking-proxy-1.0.1.tgz#81d6fd1fe13a4c0d6957df7f91b75e98dac40cb2"
@@ -2160,6 +2154,16 @@ glob@^6.0.4:
     once "^1.3.0"
     path-is-absolute "^1.0.0"
 
+glob@^6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/glob/-/glob-6.0.4.tgz#0f08860f6a155127b2fadd4f9ce24b1aab6e4d22"
+  dependencies:
+    inflight "^1.0.4"
+    inherits "2"
+    minimatch "2 || 3"
+    once "^1.3.0"
+    path-is-absolute "^1.0.0"
+
 glob@^7.0.0, glob@^7.0.3, glob@^7.0.5, glob@^7.0.6, glob@^7.1.0, glob@^7.1.2, glob@~7.1.1:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.2.tgz#c19c9df9a028702d678612384a6552404c636d15"
@@ -3612,11 +3616,11 @@ longest@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/longest/-/longest-1.0.1.tgz#30a0b2da38f73770e8294a0d22e6625ed77d0097"
 
-"loomio-angular-marked@~> 1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/loomio-angular-marked/-/loomio-angular-marked-1.3.2.tgz#978ced557a967c48a2ee339b48e36ba33978bf5d"
+loomio-angular-marked@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/loomio-angular-marked/-/loomio-angular-marked-1.2.4.tgz#a8be05ca64d7eff98e1ceedd70ab8b76f0a6f411"
   dependencies:
-    marked "^0.3.3"
+    marked "^0.3.12"
 
 "loomio-angular-router@git://github.com/loomio/router#v0.5.3.2":
   version "0.5.6"
@@ -3706,9 +3710,9 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-marked@^0.3.3:
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-0.3.7.tgz#80ef3bbf1bd00d1c9cfebe42ba1b8c85da258d0d"
+marked@^0.3.12:
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-0.3.12.tgz#7cf25ff2252632f3fe2406bde258e94eee927519"
 
 math-expression-evaluator@^1.2.14:
   version "1.2.17"
@@ -4745,27 +4749,7 @@ protractor-jasmine2-screenshot-reporter@^0.4.1:
     string.prototype.startswith "^0.2.0"
     uuid "^2.0.0"
 
-protractor@5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/protractor/-/protractor-5.1.2.tgz#9b221741709a4c62d5cd53c6aadd54a71137e95f"
-  dependencies:
-    "@types/node" "^6.0.46"
-    "@types/q" "^0.0.32"
-    "@types/selenium-webdriver" "~2.53.39"
-    blocking-proxy "0.0.5"
-    chalk "^1.1.3"
-    glob "^7.0.3"
-    jasmine "^2.5.3"
-    jasminewd2 "^2.1.0"
-    optimist "~0.6.0"
-    q "1.4.1"
-    saucelabs "~1.3.0"
-    selenium-webdriver "3.0.1"
-    source-map-support "~0.4.0"
-    webdriver-js-extender "^1.0.0"
-    webdriver-manager "^12.0.6"
-
-protractor@^5:
+protractor@5.2.2, protractor@^5:
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/protractor/-/protractor-5.2.2.tgz#80eff170761455eff6e2f111088a03c438844a41"
   dependencies:
@@ -5146,6 +5130,31 @@ request@~2.79.0:
     tunnel-agent "~0.4.1"
     uuid "^3.0.0"
 
+request@~2.79.0:
+  version "2.79.0"
+  resolved "https://registry.yarnpkg.com/request/-/request-2.79.0.tgz#4dfe5bf6be8b8cdc37fcf93e04b65577722710de"
+  dependencies:
+    aws-sign2 "~0.6.0"
+    aws4 "^1.2.1"
+    caseless "~0.11.0"
+    combined-stream "~1.0.5"
+    extend "~3.0.0"
+    forever-agent "~0.6.1"
+    form-data "~2.1.1"
+    har-validator "~2.0.6"
+    hawk "~3.1.3"
+    http-signature "~1.1.0"
+    is-typedarray "~1.0.0"
+    isstream "~0.1.2"
+    json-stringify-safe "~5.0.1"
+    mime-types "~2.1.7"
+    oauth-sign "~0.8.1"
+    qs "~6.3.0"
+    stringstream "~0.0.4"
+    tough-cookie "~2.3.0"
+    tunnel-agent "~0.4.1"
+    uuid "^3.0.0"
+
 require-directory@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
@@ -5250,15 +5259,6 @@ scss-tokenizer@^0.2.3:
   dependencies:
     js-base64 "^2.1.8"
     source-map "^0.4.2"
-
-selenium-webdriver@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/selenium-webdriver/-/selenium-webdriver-3.0.1.tgz#a2dea5da4a97f6672e89e7ca7276cefa365147a7"
-  dependencies:
-    adm-zip "^0.4.7"
-    rimraf "^2.5.4"
-    tmp "0.0.30"
-    xml2js "^0.4.17"
 
 selenium-webdriver@3.6.0:
   version "3.6.0"

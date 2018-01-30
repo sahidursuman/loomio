@@ -2,7 +2,8 @@ Records      = require 'shared/services/records.coffee'
 EventBus     = require 'shared/services/event_bus.coffee'
 ModalService = require 'shared/services/modal_service.coffee'
 
-{ listenForMentions, listenForEmoji, listenForPaste } = require 'shared/helpers/listen.coffee'
+{ listenForMentions, listenForEmoji } = require 'shared/helpers/listen.coffee'
+{ upload } = require 'shared/helpers/form.coffee'
 
 angular.module('loomioApp').directive 'lmoTextarea', ['$compile', ($compile) ->
   scope: {model: '=', field: '@', noAttachments: '@', label: '=?', placeholder: '=?', helptext: '=?', maxlength: '=?'}
@@ -14,11 +15,21 @@ angular.module('loomioApp').directive 'lmoTextarea', ['$compile', ($compile) ->
       $scope.model = model
       listenForMentions $scope, $scope.model
       listenForEmoji $scope, $scope.model, $scope.field, $element
-      listenForPaste $scope
     $scope.init($scope.model)
 
     EventBus.listen $scope, 'reinitializeForm', (_, model) ->
       $scope.init(model)
+
+    EventBus.listen $scope, 'filesPasted', (event, files) ->
+      return unless $element.find('textarea')[0] == document.activeElement
+      $scope.upload(files)
+
+    $scope.drop = (event) ->
+      $scope.upload(event.dataTransfer.files)
+
+    $scope.upload = upload $scope, $scope.model,
+      successCallback: (res) ->
+        $scope.model.newDocumentIds.push(res.documents[0].id)
 
     $scope.modelLength = ->
       $element.find('textarea').val().length

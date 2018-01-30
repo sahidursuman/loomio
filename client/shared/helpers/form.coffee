@@ -19,7 +19,7 @@ module.exports =
       failureCallback: ->
         scrollTo '.lmo-validation-error__message', container: '.poll-common-modal'
       successCallback: (data) ->
-        EventBus.emit scope, 'outcomeSaved', data.outcomes[0].id
+        EventBus.emit scope, 'nextStep'
     , options))
 
   submitStance: (scope, model, options = {}) ->
@@ -60,15 +60,28 @@ module.exports =
     , options))
 
   upload: (scope, model, options = {}) ->
-    (files) ->
-      if _.any files
-        prepare(scope, model, options)
-        options.submitFn(files[0], options.uploadKind).then(
-          success(scope, model, options),
-          failure(scope, model, options)
-        ).finally(
-          cleanup(scope, model, options)
-        )
+    upload(scope, model, options)
+
+  uploadForm: (scope, element, model, options = {}) ->
+    scope.upload     = upload(scope, model, options)
+    scope.selectFile = -> element[0].querySelector('input[type=file]').click()
+    scope.drop       = (event) -> scope.upload(event.dataTransfer.files)
+    if !options.disablePaste
+      EventBus.listen scope, 'filesPasted', (_, files) -> scope.upload(files)
+
+upload = (scope, model, options) ->
+  submitFn = options.submitFn or Records.documents.upload
+  options.loadingMessage = options.loadingMessage or 'common.action.uploading'
+  (files) ->
+    scope.files = files
+    prepare(scope, model, options)
+    for file in files
+      submitFn(file, progress(scope)).then(
+        success(scope, model, options),
+        failure(scope, model, options)
+      ).finally(
+        cleanup(scope, model, options)
+      )
 
 submit = (scope, model, options = {}) ->
   # fetch draft from server and listen for changes to it
@@ -106,6 +119,12 @@ confirm = (confirmMessage) ->
   else
     true
 
+progress = (scope) ->
+  (progress) ->
+    return unless progress.total > 0
+    scope.percentComplete = Math.floor(100 * progress.loaded / progress.total)
+    scope.$apply()
+
 success = (scope, model, options) ->
   (data) ->
     FlashService.dismiss()
@@ -129,6 +148,8 @@ cleanup = (scope, model, options = {}) ->
     options.cleanupFn(scope, model) if typeof options.cleanupFn is 'function'
     EventBus.emit scope, 'doneProcessing'
     scope.isDisabled = false
+    scope.files = null        if scope.files
+    scope.percentComplete = 0 if scope.percentComplete
 
 calculateFlashOptions = (options) ->
   _.each _.keys(options), (key) ->
