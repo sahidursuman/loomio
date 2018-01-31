@@ -153,7 +153,6 @@ module.exports = class PollModel extends BaseModel
     @handleDateOption()
     return unless @newOptionName and !_.contains(@pollOptionNames, @newOptionName)
     @pollOptionNames.push @newOptionName
-    @makeAnnouncement = true unless @isNew()
     @setMinimumStanceChoices()
     @newOptionName = ''
 

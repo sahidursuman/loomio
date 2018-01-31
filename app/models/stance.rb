@@ -43,6 +43,7 @@ class Stance < ApplicationRecord
 
   delegate :locale, to: :author
   delegate :group, to: :poll, allow_nil: true
+  delegate :mailer, to: :poll, allow_nil: true
   alias :author :participant
 
   def parent_event

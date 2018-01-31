@@ -45,15 +45,16 @@ class Invitation < ApplicationRecord
   scope :to_unverified_user, -> { pending.joins("INNER JOIN users ON users.email_verified IS FALSE AND users.email = invitations.recipient_email") }
   scope :to_unrecognized_user, -> { pending.joins("LEFT OUTER JOIN users ON users.email = invitations.recipient_email").where("users.id IS NULL") }
 
+  def poll
+    group.invitation_target if intent.to_sym == :join_poll
+  end
+
   def unsubscribe_token
     token
   end
 
   def mailer
-    case intent
-    when 'join_group' then GroupMailer
-    when 'join_poll' then PollMailer
-    end
+    "#{intent.to_s.split('_').last.classify}Mailer".constantize
   end
 
   def locale

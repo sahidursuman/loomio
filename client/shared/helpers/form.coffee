@@ -19,7 +19,8 @@ module.exports =
       failureCallback: ->
         scrollTo '.lmo-validation-error__message', container: '.poll-common-modal'
       successCallback: (data) ->
-        EventBus.emit scope, 'nextStep'
+        outcome = Records.outcomes.find(data.outcomes[0].id)
+        EventBus.emit scope, 'nextStep', outcome
     , options))
 
   submitStance: (scope, model, options = {}) ->

@@ -1,6 +1,6 @@
 class Outcome < ApplicationRecord
   extend  HasCustomFields
-  include MakesAnnouncements
+  include HasAnnouncements
   include HasMentions
   include Reactable
   include Translatable
@@ -21,6 +21,8 @@ class Outcome < ApplicationRecord
   delegate :discussion, to: :poll
   delegate :discussion_id, to: :poll
   delegate :locale, to: :poll
+  delegate :mailer, to: :poll
+  delegate :guest_group, to: :poll
 
   is_mentionable on: :statement
   is_translatable on: :statement
