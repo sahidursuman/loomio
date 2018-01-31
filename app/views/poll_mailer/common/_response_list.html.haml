@@ -1,0 +1,10 @@
+%h3= t('poll_mailer.common.results')
+%table{style: "width: 100%"}
+  - @info.poll_options.each do |poll_option|
+    %tr
+      %td= poll_option.display_name
+    %tr
+      %td
+        %table{style: "width: 100%"}
+          %tr
+            %td{height: '48px', style: "background-color: #{AppConfig.colors[@info.poll_type][0]}"}
