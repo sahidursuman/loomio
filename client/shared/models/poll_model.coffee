@@ -156,6 +156,10 @@ module.exports = class PollModel extends BaseModel
     @setMinimumStanceChoices()
     @newOptionName = ''
 
+  removeOption: (name) =>
+    _.pull @pollOptionNames, name
+    @setMinimumStanceChoices()
+
   handleDateOption: =>
     @newOptionName = moment(@optionDate).format('YYYY-MM-DD')                                     if @optionDate
     @newOptionName = moment("#{@newOptionName} #{@optionTime}", 'YYYY-MM-DD h:mma').toISOString() if @optionTime

@@ -15,10 +15,6 @@ angular.module('loomioApp').directive 'pollCommonFormOptions', ->
 
     $scope.datesAsOptions = fieldFromTemplate($scope.poll.pollType, 'dates_as_options')
 
-    $scope.removeOption = (name) ->
-      _.pull($scope.poll.pollOptionNames, name)
-      $scope.poll.setMinimumStanceChoices()
-
     $scope.canRemoveOption = (name) ->
       _.contains($scope.existingOptions, name) || AbilityService.canRemovePollOptions($scope.poll)
 

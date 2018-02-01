@@ -1,7 +1,8 @@
 AppConfig = require 'shared/services/app_config.coffee'
 Records   = require 'shared/services/records.coffee'
 
-{ submitStance } = require 'shared/helpers/form.coffee'
+{ submitStance }     = require 'shared/helpers/form.coffee'
+{ registerKeyEvent } = require 'shared/helpers/keyboard.coffee'
 
 angular.module('loomioApp').directive 'pollBrainstormVoteForm', ->
   scope: {stance: '='}
@@ -15,10 +16,13 @@ angular.module('loomioApp').directive 'pollBrainstormVoteForm', ->
         $scope.$emit 'processing'
 
     $scope.addOption = ->
-      return unless $scope.newOptionName.length
+      return unless ($scope.newOptionName or "").length
       $scope.pollOptionNames.push $scope.newOptionName
       $scope.newOptionName = ""
 
     $scope.removeOption = (name) ->
       _.pull $scope.pollOptionNames, name
+
+    registerKeyEvent $scope, 'pressedEnter', $scope.addOption, (active) ->
+      active.classList.contains('poll-brainstorm-vote-form__input')
   ]
