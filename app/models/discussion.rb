@@ -52,7 +52,7 @@ class Discussion < ApplicationRecord
 
   scope :search_for, ->(fragment) do
      joins("INNER JOIN users ON users.id = discussions.author_id")
-    .where("discussions.title ilike :fragment OR users.name ilike :fragment", fragment: "%#{fragment}%")
+    .where("discussions.title ilike :fragment OR users.name ilike :fragment", fragment: "%#{fragment}%").order(last_activity_at: :desc)
   end
 
   scope :weighted_search_for, ->(query, user, opts = {}) do
