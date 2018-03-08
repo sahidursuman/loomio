@@ -5,6 +5,7 @@ class Event < ApplicationRecord
   BLACKLISTED_KINDS = ["motion_closed", "motion_outcome_updated", "motion_outcome_created", "new_vote", "new_motion", "motion_closed_by_user", "motion_edited"].freeze
 
   has_many :notifications, dependent: :destroy
+  has_many :announcements, dependent: :destroy
   belongs_to :eventable, polymorphic: true
   belongs_to :discussion, required: false
   belongs_to :user, required: false
@@ -25,6 +26,7 @@ class Event < ApplicationRecord
 
   delegate :group, to: :eventable, allow_nil: true
   delegate :poll, to: :eventable, allow_nil: true
+  delegate :groups, to: :eventable, allow_nil: true
 
   acts_as_sequenced scope: :discussion_id, column: :sequence_id, skip: lambda {|e| e.discussion.nil? || e.discussion_id.nil? }
 

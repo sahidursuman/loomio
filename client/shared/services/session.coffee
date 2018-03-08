@@ -1,17 +1,18 @@
-AppConfig = require 'shared/services/app_config.coffee'
-Records   = require 'shared/services/records.coffee'
-I18n      = require 'shared/services/i18n.coffee'
+AppConfig     = require 'shared/services/app_config.coffee'
+Records       = require 'shared/services/records.coffee'
+I18n          = require 'shared/services/i18n.coffee'
+LmoUrlService = require 'shared/services/lmo_url_service.coffee'
+
+exceptionHandler = require 'shared/helpers/exception_handler.coffee'
 
 { hardReload } = require 'shared/helpers/window.coffee'
 
 module.exports = new class Session
   signIn: (userId, invitationToken) ->
-    defaultParams = _.pick {invitation_token: invitationToken}, _.identity
-    Records.stances.remote.defaultParams = defaultParams
-    Records.polls.remote.defaultParams   = defaultParams
-
+    setDefaultParams(invitation_token: invitationToken)
     return unless AppConfig.currentUserId = userId
     user = @user()
+    exceptionHandler.setUserContext(_.pick(user, "email", "name", "id"))
     @updateLocale()
 
     if user.timeZone != AppConfig.timeZone
@@ -19,6 +20,9 @@ module.exports = new class Session
       Records.users.updateProfile(user)
 
     user
+
+  invitation: ->
+    Records.invitations.find(token: LmoUrlService.params().invitation_token)[0] or Records.invitations.build()
 
   signOut: ->
     AppConfig.loggingOut = true
@@ -30,10 +34,20 @@ module.exports = new class Session
   currentGroupId: ->
     @currentGroup? && @currentGroup.id
 
-  updateLocale: () ->
+  updateLocale: ->
     locale = (@user().locale || "en").toLowerCase().replace('_','-')
     I18n.useLocale(locale)
     return if locale == "en"
-    Records.momentLocales.fetch(path: "#{locale}.js").then((response) -> response.text()).then (data) ->
-      eval(data)
-      moment.locale(locale)
+    Records.momentLocales.fetch(path: "#{momentLocaleFor(locale)}.js").then -> moment.locale(locale)
+
+setDefaultParams = (params) ->
+  endpoints = ['stances', 'polls', 'discussions', 'events', 'reactions', 'documents']
+  defaultParams = _.pick params, _.identity
+  _.each endpoints, (endpoint) ->
+    Records[endpoint].remote.defaultParams = _.pick params, _.identity
+
+momentLocaleFor = (locale) ->
+  if _.contains AppConfig.momentLocales.valid, locale
+    locale
+  else
+    _.first locale.split('-')

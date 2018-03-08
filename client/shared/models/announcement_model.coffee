@@ -12,13 +12,32 @@ module.exports = class AnnouncementModel extends BaseModel
 
   relationships: ->
     @belongsTo 'user'
+    @belongsTo 'event'
 
   totalNotified: ->
     _.sum @notified, (n) ->
       switch n.type
-        when 'FormalGroup' then n.notified_ids.length
-        when 'User'        then 1
-        when 'Invitation'  then 1
+        when 'Group'      then n.notified_ids.length
+        when 'User'       then 1
+        when 'Invitation' then 1
+
+  totalInvited: ->
+    0
+
+  eventForNotifiedDefault: ->
+    @event() or @recordStore.events.build
+      kind: "#{@modelType.toLowerCase()}_announced"
+      eventableId:   @modelId
+      eventableType: @modelType
+
+  recipients: ->
+    @model().announcementRecipients()
 
   model: ->
-    @recordStore["#{@announceableType.toLowerCase()}s"].find(@announceableId)
+    if @event()
+      @event().model()
+    else
+      @recordStore["#{@modelType.toLowerCase()}s"].find(@modelId)
+
+  modelName: ->
+    @model().constructor.singular

@@ -125,6 +125,7 @@ en:
       resend: Resend
       send: Send
       resent: Invitation resent
+      export: Export
     formatting_help:
       label: 'Formatting'
       title: 'Learn how to use Markdown to format your text'
@@ -240,11 +241,6 @@ en:
       <p>Dismissing a thread removes it from your unread items. If any new
         activity occurs in the thread, it will show as unread again.</p>
 
-  link_explanation_form:
-    body_html: |
-      <p>You've just created a decision that anyone with the link can participate in. Click the
-      <strong>'Copy URL'</strong> button in the action dock to copy this link to your clipboard to share it.</p>
-
   inbox:
     clear: 'Clear'
     latest: 'Latest'
@@ -337,10 +333,17 @@ en:
     start_poll: 'Start Poll'
     invite_people: 'Invite People'
 
+  notification_models:
+    discussion: 'thread: '
+    comment: 'comment in '
+    poll: 'decision: '
+    outcome: 'outcome: '
+
   notifications:
     header: "Notifications"
     no_notifications: "You don't have any notifications"
     new_discussion: "<strong>{{name}}</strong> started a discussion <strong>{{title}}</strong>"
+    discussion_announced: "<strong>{{name}}</strong> shared a discussion <strong>{{title}}</strong>"
     new_motion: "<strong>{{name}}</strong> created a proposal <strong>{{title}}</strong>"
     motion_closed: "Proposal closed: <strong>{{title}}</strong>"
     publish_outcome: "Publish an outcome"
@@ -349,7 +352,7 @@ en:
     new_vote: "<strong>{{name}}</strong> {{position}} on the proposal <strong>{{title}}</strong>"
     new_comment: "<strong>{{name}}</strong> commented on <strong>{{title}}</strong>"
     comment_replied_to: "<strong>{{name}}</strong> replied to your comment in <strong>{{title}}</strong>"
-    reaction_created: "<strong>{{name}}</strong> reacted <img class='emojione' src='{{reaction_src}}' alt='{{reaction}}'/> to your comment in <strong>{{title}}</strong>"
+    reaction_created: "<strong>{{name}}</strong> reacted <img class='emojione' src='{{reaction_src}}' alt='{{reaction}}'/> to your {{model}}<strong>{{title}}</strong>"
     user_mentioned: "<strong>{{name}}</strong> mentioned you in <strong>{{title}}</strong>"
     user_reminded: "<strong>{{name}}</strong> is waiting on you to participate in <strong>{{title}}</strong>"
     membership_requested: "<strong>{{name}}</strong> requested membership to <strong>{{title}}</strong>"
@@ -363,10 +366,12 @@ en:
     new_coordinator: "<strong>{{name}}</strong> made you a coordinator of <strong>{{title}}</strong>"
     poll_created: "<strong>{{name}}</strong> started a {{poll_type}}: <strong>{{title}}</strong>"
     poll_edited: "<strong>{{name}}</strong> edited a {{poll_type}}: <strong>{{title}}</strong>"
+    poll_announced: "<strong>{{name}}</strong> shared a {{poll_type}}: <strong>{{title}}</strong>"
     poll_closing_soon: "{{poll_type}} is closing soon: <strong>{{title}}</strong>"
     poll_expired: "{{poll_type}} closed: <strong>{{title}}</strong>"
     poll_option_added: "<strong>{{name}}</strong> added options to a {{poll_type}}: <strong>{{title}}</strong>"
     outcome_created: "<strong>{{name}}</strong> shared an outcome: <strong>{{title}}</strong>"
+    outcome_announced: "<strong>{{name}}</strong> shared an outcome: <strong>{{title}}</strong>"
     stance_created: "<strong>{{name}}</strong> participated in: <strong>{{title}}</strong>"
 
   position_buttons_panel:
@@ -404,45 +409,65 @@ en:
 
   announcement:
     form:
-      helptext: Notify the people who matter about the content you've created
-      helptext_title: Announcing content
-      helptext_1: |
-        <p>
-          Announcements allow you to notify the people you want to engage, without bothering the people you don't.
-        </p>
-        <p>
-          Simply enter the name of a person or group, or the email address of someone you'd like to send an email about the content you just created.
-          <img src="/img/announce/chip.png" />
-        </p>
-      helptext_2: |
-        <p>
-          Clicking on a group will allow you to further fine-tune who in the group will receive an email.
-          <img src="/img/announce/group.png" />
-        </p>
-      helptext_3: |
-        <p>
-          If you don't want to notify anyone right now, that's okay too! You can always announce later (or again),
-          by clicking on the <strong>Announce</strong> button in the action dock.
-          <img src="/img/announce/button.png" />
-        </p>
-      helptext_4: |
-        <p>
-          If you haven't notified anyone at all yet, you'll notice a gentle reminder to do so.
-          <img src="/img/announce/reminder.png" />
-        </p>
-
-      modal_title: Notify people
-      label: People to notify
+      discussion_helptext: Add people you'd like to notify of this thread. They will be able to view it and comment if they can't already.
+      poll_helptext: Add people you'd like to participate in this decision. They will gain access to this poll and be able to vote.
+      outcome_helptext: Add people you'd like to notify of this decision. They will be able to view the poll results.
+      relevant_discussion_helptext: This decision is part of the thread <strong>{{title}}</strong>, you can also
+      invite_to_discussion: invite people to join that conversation
+      get_shareable_link: Get shareable link
+      shareable_link_helptext: Anyone with this link will be able to participate
+      # helptext_title: Announcing content
+      # helptext_1: |
+      #   <p>
+      #     Announcements allow you to notify the people you'd like to engage, without bothering the people you don't.
+      #   </p>
+      #   <p>
+      #     Simply enter the name of a person or group, or the email address of someone you'd like to share with.
+      #   </p>
+      #   <p>
+      #     Each person entered will receive a notification; anyone who cannot access the thread or decision will be given access.
+      #     <img src="/img/announce/chip.png" />
+      #   </p>
+      # helptext_2: |
+      #   <p>
+      #     Clicking on a group will allow you to further fine-tune who in the group will receive an email.
+      #     <img src="/img/announce/group.png" />
+      #   </p>
+      # helptext_3: |
+      #   <p>
+      #     If you don't want to notify anyone right now, that's okay too! You can always announce later (or again),
+      #     by clicking on the <strong>Announce</strong> button in the action dock.
+      #     <img src="/img/announce/button.png" />
+      #   </p>
+      # helptext_4: |
+      #   <p>
+      #     If you haven't notified anyone at all yet, you'll notice a gentle reminder to do so.
+      #     <img src="/img/announce/reminder.png" />
+      #   </p>
       placeholder: Enter groups, names, or email addresses
-      notified_count: '{{count}} people will be notified'
-      notified_count_singular: 1 person will be notified
-      group_count: '({{count}} people - click to edit)'
+      discussion:
+        title: Share thread
+      poll:
+        title: Share decision
+      outcome:
+        title: Share outcome
+      notified: '{{notified}} people will be notified'
+      group_title: '{{name}} ({{count}} people)'
+      advanced: Advanced
+      click_to_edit: (click to edit)
+      click_to_expand: (click to expand)
+    members_list:
+      title: Shared with
+      last_notified: Notified
+      not_notified: Not notified yet
+      no_members: "This hasn't been shared with anyone yet!"
     group_form:
       search_placeholder: Search for people...
       modal_title: Select group members
       members_count: '{{count}} people will be notified'
     flash:
       success: '{{count}} notifications sent'
+
 
   action_dock:
     react: Add reaction
@@ -712,7 +737,7 @@ en:
       file_helptext: Upload files from your computer
     form:
       url_label: URL
-      helptext: Click here, paste, or drop files to upload
+      helptext: Click here, paste, or drop file to upload
       url_placeholder: E.g. https://www.example.com/attachment.zip
       title_helptext: What should we call this attachment?
       title_label: Name
@@ -842,6 +867,7 @@ en:
     picture_label: 'Picture'
     name_label: 'Name'
     username_label: 'Username'
+    username_helptext: 'All lowercase letters and numbers, maximum 30 characters'
     email_label: 'Email'
     short_bio_label: 'Introduction'
     locale_label: 'Language'
@@ -930,7 +956,8 @@ en:
     load_more: Load more threads
     mark_as_read: Mark as read
     dismiss: Dismiss
-    thread_dismissed: Thread dismissed.
+    thread_dismissed: Thread dismissed
+    thread_recalled: Thread recalled
     explain_mute:
       title: You haven't muted any threads yet.
       explanation_html: |
@@ -1116,7 +1143,7 @@ en:
 
   contact_message_form:
     helptext: "Want to get in touch? Just enter a message below and you'll hear from us shortly."
-    contact_us_email: "(You can also always reach us at <a href=\"mailto:contact@loomio.org\">contact@loomio.org</a>)"
+    contact_us_email: "(You can also always reach us at <a href=\"mailto:{{email}}\">{{email}}</a>)"
     contact_us: 'Contact Us'
     name_label: 'Your name'
     name_placeholder: 'Enter your name...'
@@ -1125,7 +1152,7 @@ en:
     message_label: 'Your message'
     message_placeholder: 'Your message...'
     send_message: 'Send Message'
-    new_contact_message: "Thanks for getting in touch; we''ll get back to you soon!"
+    new_contact_message: "Thanks for getting in touch; we'll get back to you soon!"
 
   hint:
     context: 'Tips for using the context panel'
@@ -1229,6 +1256,7 @@ en:
     share_count: Share check
     start_poll: Start a decision
     publish_poll: Share poll
+    view_all: View all
 
   poll_common_attachment_form:
     label: Attachments
@@ -1301,7 +1329,7 @@ en:
       title: Anonymous participants
       helptext_on: Participant info will not be shown with each response.
       helptext_off: Participants will be shown with their responses.
-    voters_can_add_options:
+    voter_can_add_options:
       title: Voters may add options
       helptext_on: Participants may add their own options when voting.
       helptext_off: Participants will select from the options you provide.
@@ -1393,6 +1421,7 @@ en:
     options_placeholder: Enter a new option...
     no_options: You haven't added any options yet.
     closing: Closing
+    closed: Closed
     start: Start
     update: Update
     loomio_school_link: |
@@ -1680,6 +1709,8 @@ en:
     welcome_back: Welcome back, {{name}}!
     login_link: Sign in via email
     set_password: Set password
+    set_password_helptext: Tired of logging in via email?
+    set_password_link: Set a password
 
     hello: "Hello, {{name}}!"
     new_to_loomio: New to {{site_name}}? Create a new account
@@ -1752,6 +1783,10 @@ en:
 
     common:
       do_it_later: I'll do this later
+
+  browser_warning:
+    message: "IMPORTANT! You are using an outdated browser ({{name}} {{version}}) which is not supported by {{site}}."
+    link: Please switch to another browser
 
   slack_added_modal:
     title: Success!

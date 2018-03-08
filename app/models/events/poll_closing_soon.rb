@@ -17,8 +17,12 @@ class Events::PollClosingSoon < Event
   end
 
   def notification_recipients
-    recipients = poll.users_from_announcements
+    recipients = poll.users_announced_to
     recipients = recipients.where.not(id: poll.participants) unless poll.voters_review_responses
     recipients
+  end
+
+  def notification_translation_values
+    super.merge(poll_type: I18n.t(:"poll_types.#{eventable.poll_type}"))
   end
 end

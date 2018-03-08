@@ -1,15 +1,17 @@
+{ triggerResize } = require 'shared/helpers/window.coffee'
+
 angular.module('loomioApp').directive 'learnMore', ->
-  scope: {text: '@', title: '@', nuggets: '='}
+  scope: {title: '@', nuggets: '='}
   restrict: 'E'
   templateUrl: 'generated/components/learn_more/learn_more.html'
   replace: true
   controller: ['$scope', ($scope) ->
-    $scope.text = $scope.text or 'common.learn_more'
-
     $scope.open = ($mdMenu, $event) ->
       $scope.index = 0
       $scope.currentNugget = $scope.nuggets[$scope.index]
       $mdMenu.open($event)
+      triggerResize(300)
+      triggerResize(600)
 
     $scope.hasNext = ->
       $scope.index < $scope.nuggets.length - 1
@@ -17,11 +19,11 @@ angular.module('loomioApp').directive 'learnMore', ->
     $scope.hasPrev = ->
       $scope.index > 0
 
-    $scope.next = ->
-      $scope.index += 1
+    $scope.navigate = (diff) ->
+      $scope.index += diff
       $scope.currentNugget = $scope.nuggets[$scope.index]
+      triggerResize()
 
-    $scope.prev = ->
-      $scope.index -= 1
-      $scope.currentNugget = $scope.nuggets[$scope.index]
+    $scope.next = -> $scope.navigate(1)
+    $scope.prev = -> $scope.navigate(-1)
   ]

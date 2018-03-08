@@ -16,9 +16,6 @@ module.exports = class UserModel extends BaseModel
     @hasMany 'identities'
     @hasMany 'reactions'
 
-  detectedLocation: ->
-    _.compact [@city, @region, @country]
-
   localeName: ->
     (_.find(AppConfig.locales, (h) => h.key == @locale) or {}).name
 
@@ -69,13 +66,13 @@ module.exports = class UserModel extends BaseModel
       group.parent()
 
   isAuthorOf: (object) ->
-    @id == object.authorId
+    @id == object.authorId if object
 
   isAdminOf: (group) ->
-    _.contains(group.adminIds(), @id)
+    _.contains(group.adminIds(), @id) if group
 
   isMemberOf: (group) ->
-    _.contains(group.memberIds(), @id)
+    _.contains(group.memberIds(), @id) if group
 
   firstName: ->
     _.first @name.split(' ') if @name

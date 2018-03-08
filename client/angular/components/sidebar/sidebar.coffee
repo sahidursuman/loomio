@@ -17,8 +17,8 @@ angular.module('loomioApp').directive 'sidebar', ['$mdMedia', '$mdSidenav', ($md
     $scope.showSidebar = true
     InboxService.load()
 
-    $scope.hasAnyGroups = ->
-      Session.user().hasAnyGroups()
+    $scope.canStartThreads = ->
+      _.any Session.user().groups(), (group) -> AbilityService.canStartThread(group)
 
     availableGroups = ->
       _.filter Session.user().groups(), (group) ->
@@ -54,7 +54,8 @@ angular.module('loomioApp').directive 'sidebar', ['$mdMedia', '$mdSidenav', ($md
         $mdSidenav('left').close()
 
     $scope.groups = ->
-      Session.user().groups().concat(Session.user().orphanParents())
+      _.filter Session.user().groups().concat(Session.user().orphanParents()), (group) ->
+        group.type == "FormalGroup"
 
     $scope.currentUser = ->
       Session.user()

@@ -5,17 +5,25 @@ bowser = require 'bowser'
 # then allow for an alternate implementation for when 'window' may not exist
 module.exports =
 
-  checkBrowser: ->
-    if (bowser.safari and bowser.version < 9) or (bowser.ie and bowser.version < 10)
-      hardReload('/417.html')
+  unsupportedBrowser: ->
+    (bowser.safari and bowser.version < 9) or (bowser.ie and bowser.version < 11)
+
+  deprecatedBrowser: ->
+    bowser.ie and bowser.version == 11
 
   exportGlobals: ->
-    window._ = require 'lodash'
+    window.moment = require 'moment'
+    window._      = require 'lodash'
     _.extend window._, require 'shared/helpers/lodash_ext.coffee'
 
   initServiceWorker: ->
     if document.location.protocol.match(/https/) && navigator.serviceWorker?
       navigator.serviceWorker.register(document.location.origin + '/service-worker.js', scope: './')
+
+  triggerResize: (delay) ->
+    setTimeout ->
+      window.dispatchEvent(new window.Event('resize'))
+    , delay if window.Event?
 
   print:             -> window.print()
   is2x:              -> window.devicePixelRatio >= 2

@@ -4,15 +4,23 @@ class Events::AnnouncementCreated < Event
   include Events::Notify::ByInvitation
   include Events::Notify::Author
 
+  def self.publish!(announcement)
+    super announcement, user: announcement.author
+  end
+
   def calendar_invite
-    eventable.announceable.respond_to?(:calendar_invite) &&
-    eventable.announceable.calendar_invite
+    eventable.eventable.respond_to?(:calendar_invite) &&
+    eventable.eventable.calendar_invite
   end
 
   private
 
+  def email_method
+    eventable.kind
+  end
+
   def notification_recipients
-    User.where(id: eventable.user_ids)
+    eventable.users_to_announce
   end
 
   def email_recipients
@@ -29,7 +37,7 @@ class Events::AnnouncementCreated < Event
   end
 
   def notify_author?
-    eventable.announceable.is_a?(Outcome) &&
-    eventable.announceable.poll.author_receives_outcome
+    eventable.eventable.is_a?(Outcome) &&
+    eventable.eventable.poll.author_receives_outcome
   end
 end

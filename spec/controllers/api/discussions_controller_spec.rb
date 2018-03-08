@@ -130,6 +130,18 @@ describe API::DiscussionsController do
       end
     end
 
+    describe 'guest threads' do
+      it 'displays guest threads' do
+        sign_in user
+        another_discussion.guest_group.add_member! user
+        DiscussionReader.for(user: user, discussion: another_discussion).set_volume! :normal
+        get :dashboard
+        json = JSON.parse(response.body)
+        discussion_ids = json['discussions'].map { |d| d['id'] }
+        expect(discussion_ids).to include another_discussion.id
+      end
+    end
+
     describe 'filtering' do
       let(:subgroup_discussion) { create :discussion, group: subgroup }
       let(:muted_discussion) { create :discussion, group: group }
@@ -198,6 +210,16 @@ describe API::DiscussionsController do
         expect(json['discussions'][0].keys).to include *(%w[id key title description last_activity_at created_at updated_at items_count private author_id group_id ])
       end
 
+      it 'displays discussion to guest group members' do
+        discussion.group.memberships.find_by(user: user).destroy
+        discussion.guest_group.add_member!(user)
+        get :show, params: { id: discussion.key }
+        json = JSON.parse(response.body)
+
+        expect(response.status).to eq 200
+        expect(json['discussions'][0]['id']).to eq discussion.id
+      end
+
       it 'returns the reader fields' do
         DiscussionReader.for(user: user, discussion: discussion).update(volume: :mute)
         get :show, params: { id: discussion.key }
@@ -237,10 +259,29 @@ describe API::DiscussionsController do
       reader.reload
     end
 
-    it "updates dismissed_at", focus: true do
+    it "updates dismissed_at" do
       patch :dismiss, params: { id: discussion.key }
       expect(response.status).to eq 200
       expect(reader.reload.dismissed_at).to be_present
+    end
+  end
+
+  describe 'recall' do
+    before { sign_in user }
+
+    let(:reader) { DiscussionReader.for(user: user, discussion: discussion) }
+
+    before do
+      group.add_admin! user
+      sign_in user
+      reader.update(volume: DiscussionReader.volumes[:normal], dismissed_at: 1.day.ago)
+      reader.reload
+    end
+
+    it "updates dismissed_at to be nil" do
+      patch :recall, params: { id: discussion.key }
+      expect(response.status).to eq 200
+      expect(reader.reload.dismissed_at).to be_nil
     end
   end
 

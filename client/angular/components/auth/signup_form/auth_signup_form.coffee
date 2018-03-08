@@ -9,11 +9,11 @@ angular.module('loomioApp').directive 'authSignupForm', ->
   scope: {user: '='}
   templateUrl: 'generated/components/auth/signup_form/auth_signup_form.html'
   controller: ['$scope', ($scope) ->
-    $scope.vars         = {}
     $scope.recaptchaKey = AppConfig.recaptchaKey
     $scope.name         = $scope.user.name
+    $scope.vars         = {name: $scope.name}
     $scope.allow        = ->
-      AppConfig.features.app.create_user or AppConfig.pendingIdentity
+      AppConfig.features.app.create_user or AppConfig.pendingIdentity.identity_type?
 
     $scope.submit = ->
       if $scope.vars.name

@@ -1,8 +1,6 @@
 Records = require 'shared/services/records.coffee'
 Session = require 'shared/services/session.coffee'
 
-moment  = require 'moment'
-
 module.exports = new class ThreadQueryService
 
   queryFor: (options = {}) ->
@@ -40,7 +38,11 @@ module.exports = new class ThreadQueryService
           when 'show_proposals' then view.applyWhere (thread) -> thread.hasDecision()
           when 'hide_proposals' then view.applyWhere (thread) -> !thread.hasDecision()
           when 'only_threads_in_my_groups'
-            view.applyFind(groupId: {$in: Session.user().groupIds()})
+            userGroupIds = Session.user().groupIds()
+            view.applyFind $or: [
+              {guestGroupId: {$in: userGroupIds}}
+              {groupId: {$in: userGroupIds}}
+            ]
 
     view
 
