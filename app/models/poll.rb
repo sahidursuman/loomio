@@ -1,19 +1,22 @@
-class Poll < ActiveRecord::Base
+class Poll < ApplicationRecord
   include CustomCounterCache::Model
   extend  HasCustomFields
+  include CustomCounterCache::Model
   include ReadableUnguessableUrls
+  include HasAnnouncements
   include HasMentions
   include HasGuestGroup
-  include MakesAnnouncements
   include MessageChannel
   include SelfReferencing
   include UsesOrganisationScope
+  include HasMailer
   include Reactable
+  include HasEvents
   include HasCreatedEvent
 
   set_custom_fields :meeting_duration, :time_zone, :dots_per_person, :pending_emails, :minimum_stance_choices
 
-  TEMPLATE_FIELDS = %w(material_icon translate_option_name stances_add_options
+  TEMPLATE_FIELDS = %w(material_icon translate_option_name stances_add_options can_vote_anonymously
                        can_add_options can_remove_options author_receives_outcome
                        must_have_options chart_type has_option_icons
                        has_variable_score voters_review_responses
@@ -48,10 +51,6 @@ class Poll < ActiveRecord::Base
   has_many :poll_unsubscriptions, dependent: :destroy
   has_many :unsubscribers, through: :poll_unsubscriptions, source: :user
 
-  has_many :guest_invitations, through: :guest_group, source: :invitations
-
-  has_many :events, -> { includes(:eventable) }, as: :eventable, dependent: :destroy
-
   has_many :poll_options, dependent: :destroy
   accepts_nested_attributes_for :poll_options, allow_destroy: true
 
@@ -72,6 +71,10 @@ class Poll < ActiveRecord::Base
   end
 
   delegate :locale, to: :author
+
+  def groups
+    [group, guest_group].compact
+  end
 
   def undecided_count
     undecided_user_count + guest_group.pending_invitations_count
@@ -142,22 +145,11 @@ class Poll < ActiveRecord::Base
   end
 
   def group_members
-    User.joins(:memberships)
-        .joins(:groups)
-        .where("memberships.group_id": group_id)
-        .where("groups.members_can_vote IS TRUE OR memberships.admin IS TRUE")
-  end
-
-  def members
-    User.distinct.from("(#{[group_members, guests].map(&:to_sql).join(" UNION ")}) as users")
+    super.joins(:groups).where("groups.members_can_vote IS TRUE OR memberships.admin IS TRUE")
   end
 
   def undecided
-    reload.members.without(participants)
-  end
-
-  def invitations
-    Invitation.where(group_id: [group_id, guest_group_id].compact)
+    reload.members.where.not(id: participants)
   end
 
   def update_stance_data
@@ -175,8 +167,8 @@ class Poll < ActiveRecord::Base
 
     # TODO: convert this to a SQL query (CROSS JOIN?)
     update_attribute(:matrix_counts,
-      poll_options.limit(5).map do |option|
-        stances.latest.limit(5).map do |stance|
+      poll_options.order(:name).limit(5).map do |option|
+        stances.latest.order(:created_at).limit(5).map do |stance|
           stance.poll_options.include?(option)
         end
       end

@@ -157,18 +157,18 @@ describe User do
 
     it "can store user experiences" do
       user.experienced!(:happiness)
-      expect(user.experiences[:happiness]).to eq true
+      expect(user.experiences['happiness']).to eq true
     end
 
     it "does not store other experiences" do
       user.experienced!(:frustration)
-      expect(user.experiences[:happiness]).to eq nil
+      expect(user.experiences['happiness']).to eq nil
     end
 
     it "can forget experiences" do
       user.update(experiences: { happiness: true })
       user.experienced!(:happiness, false)
-      expect(user.experiences[:happiness]).to eq false
+      expect(user.experiences['happiness']).to eq false
     end
   end
 
@@ -215,6 +215,40 @@ describe User do
     it 'is case insensitive' do
       user = create(:user, email: "bob@bob.com")
       expect(User.find_by(email: "BOB@bob.com")).to eq user
+    end
+  end
+
+  describe 'last_notified_at' do
+    let(:user) { create :user }
+    let(:discussion) { create :discussion }
+    let(:another_discussion) { create :discussion }
+    let(:announcement) { create :announcement, event: discussion.created_event, notified: [{
+      id: user.id,
+      type: "User",
+      notified_ids: [user.id]
+    }.with_indifferent_access]}
+    let(:old_announcement) { create :announcement, event: discussion.created_event, notified: [{
+      id: user.id,
+      type: "User",
+      notified_ids: [user.id]
+    }.with_indifferent_access], created_at: 3.days.ago }
+
+    before { announcement.announce_and_invite! }
+
+    it 'can populate last_notified_at' do
+      u = User.with_last_notified_at(discussion).detect { |u| u.id == user.id }
+      expect(u.last_notified_at).to be_within(2.seconds).of announcement.created_at
+    end
+
+    it 'gives the most recent announcement created date' do
+      old_announcement.announce_and_invite!
+      u = User.with_last_notified_at(discussion).detect { |u| u.id == user.id }
+      expect(u.last_notified_at).to_not be_within(2.seconds).of old_announcement.created_at
+    end
+
+    it 'does not populate if user has not been notified' do
+      u = User.with_last_notified_at(another_discussion).detect { |u| u.id == user.id }
+      expect(u.last_notified_at).to be_nil
     end
   end
 

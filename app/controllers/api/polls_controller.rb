@@ -36,7 +36,7 @@ class API::PollsController < API::RestfulController
   end
 
   def search_results_count
-    render json: poll_search.perform(search_filters).count
+    render json: { count: poll_search.perform(search_filters).count }
   end
 
   def toggle_subscription
@@ -54,10 +54,6 @@ class API::PollsController < API::RestfulController
     Invitation.find_by(token: params[:invitation_token])
   end
 
-  def publish_params
-    params.slice(:community_id, :message)
-  end
-
   def poll_search
     PollSearch.new(current_user)
   end
@@ -71,9 +67,9 @@ class API::PollsController < API::RestfulController
   end
 
   def accessible_records
-    Poll.where.any_of(
+    Queries::UnionQuery.for(:polls, [
       current_user.polls,
       Poll.where(id: Queries::VisiblePolls.new(user: current_user).pluck(:id))
-    )
+    ])
   end
 end

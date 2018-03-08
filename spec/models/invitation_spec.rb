@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 describe Invitation do
-  let(:admin_user){FactoryGirl.create(:admin_user)}
-  let(:group){FactoryGirl.create(:formal_group)}
+  let(:admin_user){FactoryBot.create(:admin_user)}
+  let(:group){FactoryBot.create(:formal_group)}
 
   before do
     @invitation = Invitation.create(recipient_email: 'test@example.org',
@@ -65,10 +65,7 @@ describe Invitation do
   context 'to_join_group' do
 
     before do
-      @invitation = InvitationService.create_invite_to_join_group(
-        inviter: admin_user,
-        recipient_email: 'jon@lemmon.com',
-        group: group)
+      @invitation = create(:invitation, inviter: admin_user, recipient_email: 'jon@lemmon.com', group: group, intent: :join_group)
     end
     it 'has a unique token' do
       @invitation.token.length.should > 10

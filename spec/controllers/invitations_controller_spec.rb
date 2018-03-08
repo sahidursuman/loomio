@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 describe InvitationsController do
-  let(:group) { FactoryGirl.create(:formal_group) }
-  let(:user) { FactoryGirl.create(:user) }
-  let(:another_group) { FactoryGirl.create(:formal_group) }
-  let(:another_user) { FactoryGirl.create(:user) }
+  let(:group) { FactoryBot.create(:formal_group) }
+  let(:user) { FactoryBot.create(:user) }
+  let(:another_group) { FactoryBot.create(:formal_group) }
+  let(:another_user) { FactoryBot.create(:user) }
 
   before do
     group.add_admin!(user)
@@ -16,7 +16,7 @@ describe InvitationsController do
 
     context 'invitation not found' do
       it 'renders error page with not found message' do
-        get :show, id: 'asdjhadjkhaskjdsahda'
+        get :show, params: { id: 'asdjhadjkhaskjdsahda' }
         expect(response.status).to eq 404
         expect(response).to render_template "errors/404"
       end
@@ -29,8 +29,8 @@ describe InvitationsController do
       end
 
       it 'says sorry invitatino already used' do
-        get :show, id: invitation.token
-        expect(response).to redirect_to(group_url(invitation.group))
+        get :show, params: { id: invitation.token }
+        expect(response).to redirect_to(group_url(invitation.group, invitation_token: invitation.token))
       end
     end
 
@@ -40,14 +40,14 @@ describe InvitationsController do
       it 'redirects to the group if a member' do
         group.add_member! another_user
         sign_in another_user
-        get :show, id: invitation.token
-        expect(response).to redirect_to group_url(group)
+        get :show, params: { id: invitation.token }
+        expect(response).to redirect_to group_url(group, invitation_token: invitation.token)
       end
     end
 
     context "user not signed in" do
       before do
-        get :show, id: invitation.token
+        get :show, params: { id: invitation.token }
       end
 
       it "sets session attribute of the invitation token" do
@@ -55,7 +55,7 @@ describe InvitationsController do
       end
 
       it "redirects to the group" do
-        response.should redirect_to(group_url(invitation.group))
+        response.should redirect_to(group_url(invitation.group, invitation_token: invitation.token))
       end
 
       it 'does not accept the invitation' do
@@ -66,17 +66,17 @@ describe InvitationsController do
 
     context "user is signed in" do
       before do
-        sign_in @user = FactoryGirl.create(:user)
+        sign_in @user = FactoryBot.create(:user)
       end
 
       context 'get with invitation token in query' do
 
         it "accepts invitation and redirects to group " do
-          get :show, id: invitation.token
+          get :show, params: { id: invitation.token }
           invitation.reload
           expect(invitation.accepted?).to be true
           expect(Membership.find_by(group: group, user: user)).to be_present
-          response.should redirect_to group_url(group)
+          response.should redirect_to group_url(group, invitation_token: invitation.token)
         end
 
       end
@@ -87,8 +87,8 @@ describe InvitationsController do
         end
 
         it 'accepts the invitation, redirects to group, and clears token from session' do
-          get :show, id: invitation.token
-          response.should redirect_to group_url(group)
+          get :show, params: { id: invitation.token }
+          response.should redirect_to group_url(group, invitation_token: invitation.token)
           invitation.reload
           expect(invitation.accepted?).to be true
           expect(Membership.find_by(group: group, user: user)).to be_present

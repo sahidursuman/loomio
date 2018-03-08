@@ -1,12 +1,14 @@
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   include CustomCounterCache::Model
   include ReadableUnguessableUrls
   include MessageChannel
   include HasExperiences
   include HasAvatar
-  include UsesWithoutScope
+  # include UsesWithoutScope
   include SelfReferencing
   include NoForbiddenEmails
+  include HasMailer
+  include CustomCounterCache::Model
 
   MAX_AVATAR_IMAGE_SIZE_CONST = 100.megabytes
   BOT_EMAILS = {
@@ -31,8 +33,7 @@ class User < ActiveRecord::Base
 
   validates_attachment :uploaded_avatar,
     size: { in: 0..MAX_AVATAR_IMAGE_SIZE_CONST.kilobytes },
-    content_type: { content_type: /\Aimage/ },
-    file_name: { matches: [/png\Z/i, /jpe?g\Z/i, /gif\Z/i] }
+    content_type: { content_type: /\Aimage/ }
 
   validates_uniqueness_of :email, conditions: -> { where(email_verified: true) }, if: :email_verified?
   validates_uniqueness_of :username
@@ -45,11 +46,18 @@ class User < ActiveRecord::Base
   validates :password, nontrivial_password: true, allow_nil: true
   validate  :ensure_recaptcha, if: :recaptcha
 
-  has_many :contacts, dependent: :destroy
   has_many :admin_memberships,
            -> { where('memberships.admin = ? AND memberships.is_suspended = ?', true, false) },
            class_name: 'Membership',
            dependent: :destroy
+
+  has_many :memberships,
+           -> { where(is_suspended: false, archived_at: nil) },
+           dependent: :destroy
+
+  has_many :archived_memberships,
+           -> { where('archived_at IS NOT NULL') },
+           class_name: 'Membership'
 
   has_many :formal_groups,
            -> { where(type: "FormalGroup") },
@@ -62,14 +70,6 @@ class User < ActiveRecord::Base
            through: :admin_memberships,
            class_name: 'Group',
            source: :group
-
-  has_many :memberships,
-           -> { where(is_suspended: false, archived_at: nil) },
-           dependent: :destroy
-
-  has_many :archived_memberships,
-           -> { where('archived_at IS NOT NULL') },
-           class_name: 'Membership'
 
   has_many :membership_requests,
            foreign_key: 'requestor_id',
@@ -104,6 +104,8 @@ class User < ActiveRecord::Base
   has_many :drafts, dependent: :destroy
   has_many :login_tokens, dependent: :destroy
 
+  has_many :announcees, dependent: :destroy, as: :announceable
+
   has_one :deactivation_response,
           class_name: 'UserDeactivationResponse',
           dependent: :destroy
@@ -125,14 +127,37 @@ class User < ActiveRecord::Base
   scope :verified, -> { where(email_verified: true) }
   scope :unverified, -> { where(email_verified: false) }
   scope :verified_first, -> { order(email_verified: :desc) }
+  scope :search_for, ->(query) { where("name ilike :q OR username ilike :q", q: "%#{query}%") }
 
-  # move to ThreadMailerQuery
   scope :email_when_proposal_closing_soon, -> { active.where(email_when_proposal_closing_soon: true) }
 
   scope :email_proposal_closing_soon_for, -> (group) {
      email_when_proposal_closing_soon
     .joins(:memberships)
     .where('memberships.group_id': group.id)
+  }
+
+  # This is a double-nested join select raw sql statement, eek!
+  # But, it's not soo complicated. Here's what's going on:
+  # Join 1: Grab all instances of a user receiving an announcement from the given model, based on the model's announcement ids
+  # Join 2: Group those instances, taking the most recent instance's created_at as the last_notified_at timestamp
+  #
+  # then, we join that timestamp to the current user query, available in the last_notified_at column
+  scope :with_last_notified_at, ->(model) {
+    select('*, last_notified_at').joins(<<~SQL)
+      -- join #2
+      LEFT JOIN (
+        SELECT users.id as user_id, max(notified.created_at) as last_notified_at
+        FROM users
+        -- join #1
+        LEFT JOIN (
+          SELECT user_ids, created_at
+          FROM   announcees
+          WHERE  announcees.announcement_id IN (#{model.announcement_ids.join(',').presence || '-1'})
+        ) notified ON notified.user_ids ? users.id::varchar
+        GROUP BY users.id
+      ) announcements ON announcements.user_id = users.id
+    SQL
   }
 
   def self.email_status_for(email)

@@ -7,6 +7,7 @@ describe 'DiscussionService' do
   let(:group) { create(:formal_group) }
   let(:another_group) { create(:formal_group, is_visible_to_public: false) }
   let(:discussion) { create(:discussion, author: user, group: group) }
+  let(:poll) { create(:poll, discussion: discussion, group: group) }
   let(:comment) { double(:comment,
                          save!: true,
                          valid?: true,
@@ -16,7 +17,7 @@ describe 'DiscussionService' do
                          destroy: true,
                          author: user) }
   let(:document) { create(:document) }
-  let(:discussion_params) { {title: "new title", description: "new description", private: true, uses_markdown: true} }
+  let(:discussion_params) { {title: "new title", description: "new description", private: true} }
 
   describe 'create' do
     it 'authorizes the user can create the discussion' do
@@ -31,16 +32,8 @@ describe 'DiscussionService' do
       expect(draft.reload.payload['discussion']).to be_blank
     end
 
-    describe 'make_announcement' do
-      it 'notifies users when make_announcement is true' do
-        discussion.make_announcement = true
-        expect { DiscussionService.create(discussion: discussion, actor: user) }.to change { ActionMailer::Base.deliveries.count }.by(1)
-      end
-
-      it 'does not notify userse when make_announcement is false' do
-        discussion.make_announcement = false
-        expect { DiscussionService.create(discussion: discussion, actor: user) }.to_not change { ActionMailer::Base.deliveries.count }
-      end
+    it 'does not email people' do
+      expect { DiscussionService.create(discussion: discussion, actor: user) }.to_not change { ActionMailer::Base.deliveries.count }
     end
 
     context 'the discussion is valid' do
@@ -55,8 +48,9 @@ describe 'DiscussionService' do
       it 'notifies new mentions' do
         discussion.group.add_member! another_user
         discussion.description = "A mention for @#{another_user.username}!"
-        expect(Events::UserMentioned).to receive(:publish!).with(discussion, user, another_user)
-        DiscussionService.create(discussion: discussion, actor: user)
+        expect { DiscussionService.create(discussion: discussion, actor: user) }.to change {
+          Events::UserMentioned.where(kind: :user_mentioned).count
+        }.by(1)
       end
 
       it 'does not notify users outside the group' do
@@ -281,6 +275,14 @@ describe 'DiscussionService' do
       group.members << user
       expect { DiscussionService.move(discussion: discussion, params: { group_id: another_group.id }, actor: user) }.to raise_error CanCan::AccessDenied
       expect(discussion.reload.group).to_not eq another_group.id
+    end
+
+    it 'updates the group for any polls in the discussion' do
+      group.add_member! user
+      another_group.add_member! user
+      poll
+      DiscussionService.move(discussion: discussion, params: { group_id: another_group.id }, actor: user)
+      expect(discussion.polls.first.group).to eq another_group
     end
   end
 

@@ -1,7 +1,8 @@
-class Stance < ActiveRecord::Base
+class Stance < ApplicationRecord
   include CustomCounterCache::Model
   include HasMentions
   include Reactable
+  include HasEvents
   include HasCreatedEvent
 
   ORDER_SCOPES = ['newest_first', 'oldest_first', 'priority_first', 'priority_last']
@@ -24,7 +25,6 @@ class Stance < ActiveRecord::Base
   update_counter_cache :poll, :undecided_user_count
 
   scope :latest, -> { where(latest: true) }
-
   scope :newest_first,   -> { order(created_at: :desc) }
   scope :oldest_first,   -> { order(created_at: :asc) }
   scope :priority_first, -> { joins(:poll_options).order('poll_options.priority ASC') }
@@ -40,10 +40,10 @@ class Stance < ActiveRecord::Base
   validate :participant_is_complete
   validates :reason, length: { maximum: 250 }
 
-  has_many :events, as: :eventable, dependent: :destroy
-
   delegate :locale, to: :author
   delegate :group, to: :poll, allow_nil: true
+  delegate :mailer, to: :poll, allow_nil: true
+  delegate :groups, to: :poll
   alias :author :participant
 
   def parent_event

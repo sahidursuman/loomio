@@ -30,7 +30,7 @@ describe Stance do
   describe 'choice shorthand' do
     let(:poll) { Poll.create!(poll_type: 'poll', title: 'which pet?', poll_option_names: %w[dog cat], closing_at: 1.day.from_now, author: author)}
     let(:poll_brainstorm) { create :poll_brainstorm, title: 'which pet?', poll_option_names: %w[dog cat] }
-    let(:author) { FactoryGirl.create(:user) }
+    let(:author) { create(:user) }
 
     it "string" do
       stance = Stance.create(poll: poll, participant: author, choice: 'dog')

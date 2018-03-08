@@ -19,6 +19,7 @@ module Ability::Group
         false
       else
         user_is_member_of?(group.id) or
+        group.group_privacy == 'open' or
         (group.is_visible_to_parent_members? and user_is_member_of?(group.parent_id))
       end
     end
@@ -76,6 +77,11 @@ module Ability::Group
       can?(:show, group) &&
       (group.membership_granted_upon_request? ||
        group.invitations.useable.find_by(recipient_email: user.email))
+    end
+
+    can :start_poll, ::Group do |group|
+      user_is_admin_of?(group&.id) ||
+      (user_is_member_of?(group&.id) && group.members_can_raise_motions)
     end
   end
 end

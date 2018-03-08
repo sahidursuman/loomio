@@ -10,12 +10,12 @@ describe "User abilities" do
   let(:ability) { Ability::Base.new(user) }
   subject { ability }
 
-  let(:own_invitation) { InvitationService.create_invite_to_join_group(recipient_email: "h@h.com",
-                                                                       group: group,
-                                                                       inviter: user) }
-  let(:other_members_invitation) { InvitationService.create_invite_to_join_group(recipient_email: "h@h.com",
-                                                                                 group: group,
-                                                                                 inviter: other_user) }
+  let(:own_invitation) {
+    create :invitation, recipient_email: "h@h.com", group: group, inviter: user, intent: :join_group
+  }
+  let(:other_members_invitation) {
+    create :invitation, recipient_email: "h@h.com", group: group, inviter: other_user, intent: :join_group
+  }
   it { should be_able_to(:create, group) }
 
   context "in relation to a group" do
@@ -217,7 +217,7 @@ describe "User abilities" do
       context "is not most recent comment" do
         before do
           user_comment
-          FactoryGirl.create(:comment, discussion: discussion, author: other_user)
+          FactoryBot.create(:comment, discussion: discussion, author: other_user)
         end
         it { should_not be_able_to(:update, user_comment) }
       end

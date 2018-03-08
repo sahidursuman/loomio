@@ -31,12 +31,6 @@ EventBus.configure do |config|
   # add poll creator as admin of guest group
   config.listen('poll_create') { |poll, actor| poll.guest_group.add_admin!(actor) }
 
-  # publish to new group if group has changed
-  config.listen('poll_changed_group') do |poll, actor|
-    poll.make_announcement = true
-    Events::PollCreated.publish!(poll, actor)
-  end
-
   # mark invitations with the new user's email as used
   config.listen('user_added_to_group_event', 'user_joined_group_event') do |event|
     event.eventable.group.invitations.pending
@@ -49,7 +43,6 @@ EventBus.configure do |config|
 
   # send memos to client side after comment change
   config.listen('comment_destroy')  { |comment|  Memos::CommentDestroyed.publish!(comment) }
-  config.listen('comment_update')   { |comment|  Memos::CommentUpdated.publish!(comment) }
   config.listen('reaction_destroy') { |reaction| Memos::ReactionDestroyed.publish!(reaction: reaction) }
 
   config.listen('new_comment_event',
@@ -65,29 +58,22 @@ EventBus.configure do |config|
   end
 
   config.listen('event_remove_from_thread') do |event|
-    MessageChannelService.publish(
-      ActiveModel::ArraySerializer.new([event], each_serializer: Events::BaseSerializer, root: :events).as_json,
-      to: event.eventable.group
-    )
+    MessageChannelService.publish_model(event, serializer: Events::BaseSerializer)
   end
+
   config.listen('discussion_mark_as_read',
                 'discussion_dismiss',
                 'discussion_mark_as_seen') do |reader|
-    MessageChannelService.publish(
-      ActiveModel::ArraySerializer.new([reader], each_serializer: DiscussionReaderSerializer, root: :discussions).as_json,
-      to: reader.user
-    )
+    MessageChannelService.publish_data(ActiveModel::ArraySerializer.new([reader], each_serializer: DiscussionReaderSerializer, root: :discussions).as_json, to: reader.message_channel)
   end
+
   config.listen('discussion_mark_as_seen') do |reader|
-    MessageChannelService.publish(
-      ActiveModel::ArraySerializer.new([reader.discussion], each_serializer: DiscussionSerializer, root: :discussions).as_json,
-      to: reader.discussion.group
-    )
+    MessageChannelService.publish_model(reader.discussion)
   end
 
   # alert clients that notifications have been read
   config.listen('notification_viewed') do |actor|
-    MessageChannelService.publish(NotificationCollection.new(actor).serialize!, to: actor)
+    MessageChannelService.publish_data(NotificationCollection.new(actor).serialize!, to: actor.message_channel)
   end
 
   # update discussion or comment versions_count when title or description edited
@@ -97,7 +83,7 @@ EventBus.configure do |config|
   config.listen('stance_create')  { |stance| stance.poll.update_stance_data }
 
   # publish reply event after comment creation
-  config.listen('comment_create') { |comment| Events::CommentRepliedTo.publish!(comment) }
+  config.listen('comment_create') { |comment| Events::CommentRepliedTo.publish!(comment) if comment.parent }
 
   # publish mention events after model create / update
   config.listen('comment_create',
@@ -121,4 +107,7 @@ EventBus.configure do |config|
 
   # collect user deactivation response
   config.listen('user_deactivate') { |user, actor, params| UserDeactivationResponse.create(user: user, body: params[:deactivation_response]) }
+
+  # add guests to guest group of eventable
+  config.listen('announcement_create') { |announcement| announcement.announce_and_invite! }
 end
