@@ -35,5 +35,6 @@ angular.module('loomioApp').directive 'membershipsPanel', ->
       AbilityService.canAddMembers($scope.group)
 
     $scope.invitePeople = ->
-      ModalService.open 'InvitationModal', group: => $scope.group
+      ModalService.open 'AnnouncementModal', announcement: ->
+        Records.announcements.buildFromModel($scope.group)
   ]

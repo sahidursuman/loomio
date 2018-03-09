@@ -23,7 +23,8 @@ angular.module('loomioApp').directive 'membersCard', ->
       AbilityService.canAdministerGroup($scope.group) and $scope.group.memberships().length <= 1
 
     $scope.invitePeople = ->
-      ModalService.open 'InvitationModal', group: -> $scope.group
+      ModalService.open 'AnnouncementModal', announcement: ->
+        Records.announcements.buildFromModel($scope.group)
 
     if $scope.canViewMemberships()
       Records.memberships.fetchByGroup $scope.group.key, per: 10

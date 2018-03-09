@@ -12,3 +12,9 @@ module.exports = class MemberModel extends BaseModel
       when 'gravatar' then @gravatarMd5    = @logoUrl
       when 'initials' then @avatarInitials = @logoUrl
       when 'uploaded' then @avatarUrl      = { small: @logoUrl }
+
+  group: ->
+    return unless @type == 'Group'
+    id: _.last(@key.split('-'))
+    constructor:
+      singular: 'group'

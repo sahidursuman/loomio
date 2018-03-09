@@ -18,7 +18,7 @@ angular.module('loomioApp').directive 'announcementMemberList', ->
         member.expanded = false
       else
         member.loading = true
-        Records.announcements.fetchMembersFor($scope.model, expand_group: true).then (data) ->
+        Records.announcements.fetchMembersFor(member.group()).then (data) ->
           member.expanded = true
           member.submembers = Records.members.find(_.pluck(data.members, 'key'))
         .finally -> member.loading = false

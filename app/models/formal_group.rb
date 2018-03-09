@@ -1,5 +1,6 @@
 class FormalGroup < Group
   include HasTimeframe
+  include Members::ForInvitation
 
   validates_presence_of :name
   validates :name, length: { maximum: 250 }

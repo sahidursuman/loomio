@@ -5,6 +5,7 @@ HasDrafts        = require 'shared/mixins/has_drafts.coffee'
 HasDocuments     = require 'shared/mixins/has_documents.coffee'
 HasTranslations  = require 'shared/mixins/has_translations.coffee'
 HasAnnouncements = require 'shared/mixins/has_announcements.coffee'
+HasShareableLink = require 'shared/mixins/has_shareable_link.coffee'
 HasGuestGroup    = require 'shared/mixins/has_guest_group.coffee'
 
 module.exports = class PollModel extends BaseModel
@@ -21,6 +22,7 @@ module.exports = class PollModel extends BaseModel
     HasMentions.apply @, 'details'
     HasTranslations.apply @
     HasAnnouncements.apply @
+    HasShareableLink.apply @
     HasGuestGroup.apply @
 
   draftParent: ->

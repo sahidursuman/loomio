@@ -15,7 +15,7 @@ class API::AnnouncementsController < API::RestfulController
   end
 
   def members
-    self.collection = Queries::Notified::Members.new(notified_model, params[:expand_group]).results
+    self.collection = notified_model.announcement_members
     respond_with_collection serializer: MemberSerializer, root: :members
   end
 
@@ -36,6 +36,7 @@ class API::AnnouncementsController < API::RestfulController
     @notified_model ||=
       load_and_authorize(:discussion, optional: true) ||
       load_and_authorize(:poll, optional: true) ||
-      load_and_authorize(:outcome)
+      load_and_authorize(:outcome, optional: true) ||
+      load_and_authorize(:group, optional: true)
   end
 end

@@ -14,6 +14,7 @@ angular.module('loomioApp').directive 'announcementForm', ->
       $scope.$emit 'doneProcessing'
 
     Records.members.collection.chain().remove()
+    Records.invitations.fetchShareableFor($scope.announcement.model()) if $scope.announcement.model().constructor.singular == 'group'
 
     $scope.acceptChip = ($chip) ->
       $chip.subtitle = I18n.t('announcement.form.click_to_edit') if $chip.type == 'Group'
@@ -24,8 +25,8 @@ angular.module('loomioApp').directive 'announcementForm', ->
         Records.announcements.buildFromModel($scope.relevantDiscussion())
 
     $scope.relevantDiscussion = ->
-      return if $scope.announcement.modelName() == 'discussion'
-      $scope.announcement.model().discussion()
+      discussion = ($scope.announcement.model().discussion or ->)()
+      discussion unless discussion == $scope.announcement.model()
 
     $scope.search = (query) ->
       Records.announcements.fetchNotified(query)

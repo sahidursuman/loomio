@@ -1,4 +1,4 @@
-module.exports = new class HasDocuments
+module.exports = new class HasAnnouncements
   apply: (model, opts = {}) ->
     model.announcements = ->
       model.recordStore.announcements.find model.announcementIds
@@ -11,13 +11,5 @@ module.exports = new class HasDocuments
 
     model.announcementInvitations = ->
       model.recordStore.invitations.find _.flatten _.pluck @announcements(), 'invitationIds'
-
-    model.announcedAtFor = (thing) ->
-      relation = switch thing.constructor.singular
-        when 'invitation' then 'invitationIds'
-        when 'user'       then 'userIds'
-      _.find(model.announcements(), (announcement) ->
-        _.contains announcement[relation], thing.id
-      ).createdAt
 
     model.announcementsApplied = true

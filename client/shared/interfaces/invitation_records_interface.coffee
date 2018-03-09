@@ -11,7 +11,5 @@ module.exports = class InvitationRecordsInterface extends BaseRecordsInterface
     options['group_key'] = groupKey
     @remote.get('/pending', options)
 
-  fetchShareableInvitationByGroupId: (groupId, options = {}) ->
-    return unless groupId
-    options['group_id'] = groupId
-    @remote.get('/shareable', options)
+  fetchShareableFor: (group) ->
+    @remote.get '/shareable', group_id: group.id

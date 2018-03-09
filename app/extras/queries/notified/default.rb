@@ -7,6 +7,10 @@ Queries::Notified::Default = Struct.new(:kind, :model, :user) do
 
   private
 
+  def notified_none
+    []
+  end
+
   def notified_group
     Array((Notified::Group.new(model.group, user) if model.group.presence))
   end
@@ -19,6 +23,7 @@ Queries::Notified::Default = Struct.new(:kind, :model, :user) do
     model.participants.where.not(id: user).map { |participant| Notified::User.new(participant) }
   end
 
+  alias :group_announced      :notified_none
   alias :new_discussion       :notified_group
   alias :discussion_edited    :notified_group
   alias :discussion_announced :notified_group_optional

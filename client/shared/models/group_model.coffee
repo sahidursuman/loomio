@@ -1,7 +1,8 @@
-BaseModel    = require 'shared/record_store/base_model.coffee'
-AppConfig    = require 'shared/services/app_config.coffee'
-HasDrafts    = require 'shared/mixins/has_drafts.coffee'
-HasDocuments = require 'shared/mixins/has_documents.coffee'
+BaseModel        = require 'shared/record_store/base_model.coffee'
+AppConfig        = require 'shared/services/app_config.coffee'
+HasDrafts        = require 'shared/mixins/has_drafts.coffee'
+HasShareableLink = require 'shared/mixins/has_shareable_link.coffee'
+HasDocuments     = require 'shared/mixins/has_documents.coffee'
 
 module.exports = class GroupModel extends BaseModel
   @singular: 'group'
@@ -36,6 +37,7 @@ module.exports = class GroupModel extends BaseModel
       @allowPublicThreads = @discussionPrivacyOptions == 'public_or_private'
     HasDrafts.apply @
     HasDocuments.apply @, showTitle: true
+    HasShareableLink.apply @, alwaysShareable: true
 
   relationships: ->
     @hasMany 'discussions'
@@ -56,8 +58,8 @@ module.exports = class GroupModel extends BaseModel
 
   group: -> @
 
-  shareableInvitation: ->
-    @recordStore.invitations.find(singleUse:false, groupId: @id)[0]
+  shareableLink: ->
+    (@recordStore.invitations.find(singleUse:false, groupId: @id)[0] or {}).url
 
   closedPolls: ->
     _.filter @polls(), (poll) ->

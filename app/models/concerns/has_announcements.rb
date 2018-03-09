@@ -2,6 +2,7 @@ module HasAnnouncements
   extend ActiveSupport::Concern
   include HasEvents
   include CustomCounterCache::Model
+  include Members::ForAnnouncement
 
   included do
     has_many :announcements, through: :events

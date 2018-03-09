@@ -160,6 +160,12 @@ class User < ApplicationRecord
     SQL
   }
 
+  scope :with_joined_at, ->(group) {
+    select('*, m.created_at as last_notified_at').joins(<<~SQL)
+      LEFT JOIN memberships m ON m.group_id = #{group.id} AND m.user_id = users.id
+    SQL
+  }
+
   def self.email_status_for(email)
     (verified_first.find_by(email: email) || LoggedOutUser.new).email_status
   end

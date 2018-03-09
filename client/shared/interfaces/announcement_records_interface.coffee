@@ -4,12 +4,11 @@ AnnouncementModel    = require 'shared/models/announcement_model.coffee'
 module.exports = class AnnouncementRecordsInterface extends BaseRecordsInterface
   model: AnnouncementModel
 
-  fetchMembersFor: (model, expandGroup) ->
-    params = {"#{model.constructor.singular}_id": model.id}
-    params.expand_group = true if expandGroup?
+  fetchMembersFor: (model) ->
     @fetch
       path: 'members'
-      params: params
+      params:
+        "#{model.constructor.singular}_id": model.id
 
   fetchNotified: (fragment) ->
     @fetch
