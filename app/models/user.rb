@@ -38,8 +38,8 @@ class User < ApplicationRecord
     content_type: { content_type: /\Aimage/ }
 
   validates_uniqueness_of :email, conditions: -> { where(email_verified: true) }, if: :email_verified?
-  validates_uniqueness_of :username, if: :email_verified
-  before_validation :generate_username, if: :email_verified
+  validates_uniqueness_of :username, if: :name
+  before_validation :generate_username, if: :name
   validates_length_of :username, maximum: 30
   validates_length_of :short_bio, maximum: 500
   validates_format_of :username, with: /\A[a-z0-9]*\z/, message: I18n.t(:'user.error.username_must_be_alphanumeric')
@@ -123,7 +123,7 @@ class User < ApplicationRecord
 
   scope :active, -> { where(deactivated_at: nil) }
   scope :inactive, -> { where("deactivated_at IS NOT NULL") }
-  scope :email_missed_yesterday, -> { active.where(email_missed_yesterday: true) }
+  scope :email_missed_yesterday, -> { active.verified.where(email_missed_yesterday: true) }
   scope :sorted_by_name, -> { order("lower(name)") }
   scope :admins, -> { where(is_admin: true) }
   scope :coordinators, -> { joins(:memberships).where('memberships.admin = ?', true).group('users.id') }
@@ -229,7 +229,13 @@ class User < ApplicationRecord
   end
 
   def email_status
-    if deactivated_at.present? then :inactive else :active end
+    if deactivated_at.present?
+      :inactive
+    elsif email_verified
+      :verified
+    else
+      :unverified
+    end
   end
 
   def name_and_email
