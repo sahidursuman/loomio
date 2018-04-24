@@ -75,6 +75,11 @@ meeting:
   must_have_options:       true
   dates_as_options:        true
   author_receives_outcome: true
+  has_variable_score:      true
+  has_score_icons:         true
+  prevent_anonymous:       true
+  required_custom_fields:
+    - can_respond_maybe
   sort_options:
     - newest_first
     - oldest_first
@@ -89,6 +94,7 @@ ranked_choice:
   require_stance_choices:  true
   has_variable_score:      true
   can_vote_anonymously:    true
+  has_option_score_counts: true
   required_custom_fields:
     - minimum_stance_choices
   sort_options:

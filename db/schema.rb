@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180305201407) do
+ActiveRecord::Schema.define(version: 20180419223418) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -120,7 +120,6 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.boolean "uses_markdown", default: false, null: false
     t.integer "comment_votes_count", default: 0, null: false
     t.integer "attachments_count", default: 0, null: false
-    t.text "liker_ids_and_names"
     t.datetime "edited_at"
     t.integer "versions_count", default: 0
     t.index ["created_at"], name: "index_comments_on_created_at"
@@ -128,16 +127,6 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.index ["discussion_id"], name: "index_comments_on_discussion_id"
     t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
-  end
-
-  create_table "contact_messages", id: :serial, force: :cascade do |t|
-    t.string "name", limit: 255
-    t.integer "user_id"
-    t.string "email", limit: 255
-    t.text "message"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "destination", limit: 255, default: "contact@loomio.org"
   end
 
   create_table "default_group_covers", id: :serial, force: :cascade do |t|
@@ -228,6 +217,7 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.index ["author_id"], name: "index_discussions_on_author_id"
     t.index ["created_at"], name: "index_discussions_on_created_at"
     t.index ["group_id"], name: "index_discussions_on_group_id"
+    t.index ["guest_group_id"], name: "index_discussions_on_guest_group_id"
     t.index ["key"], name: "index_discussions_on_key", unique: true
     t.index ["last_activity_at"], name: "index_discussions_on_last_activity_at", order: { last_activity_at: :desc }
     t.index ["private"], name: "index_discussions_on_private"
@@ -281,14 +271,6 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.index ["eventable_type", "eventable_id"], name: "index_events_on_eventable_type_and_eventable_id"
     t.index ["parent_id", "position"], name: "index_events_on_parent_id_and_position", where: "(parent_id IS NOT NULL)"
     t.index ["parent_id"], name: "index_events_on_parent_id", where: "(parent_id IS NOT NULL)"
-  end
-
-  create_table "group_hierarchies", id: false, force: :cascade do |t|
-    t.integer "ancestor_id", null: false
-    t.integer "descendant_id", null: false
-    t.integer "generations", null: false
-    t.index ["ancestor_id", "descendant_id", "generations"], name: "group_anc_desc_udx", unique: true
-    t.index ["descendant_id"], name: "group_desc_idx"
   end
 
   create_table "group_identities", id: :serial, force: :cascade do |t|
@@ -422,6 +404,7 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string "redirect"
+    t.integer "code", default: 0, null: false
   end
 
   create_table "membership_requests", id: :serial, force: :cascade do |t|
@@ -457,11 +440,13 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.integer "volume", default: 2, null: false
     t.jsonb "experiences", default: {}, null: false
     t.integer "invitation_id"
+    t.string "token"
     t.index ["created_at"], name: "index_memberships_on_created_at"
     t.index ["group_id", "user_id", "is_suspended", "archived_at"], name: "active_memberships"
     t.index ["group_id", "user_id"], name: "index_memberships_on_group_id_and_user_id", unique: true
     t.index ["group_id"], name: "index_memberships_on_group_id"
     t.index ["inviter_id"], name: "index_memberships_on_inviter_id"
+    t.index ["token"], name: "index_memberships_on_token", unique: true
     t.index ["user_id", "volume"], name: "index_memberships_on_user_id_and_volume"
     t.index ["user_id"], name: "index_memberships_on_user_id"
     t.index ["volume"], name: "index_memberships_on_volume"
@@ -579,17 +564,11 @@ ActiveRecord::Schema.define(version: 20180305201407) do
     t.string "name", null: false
     t.integer "poll_id"
     t.integer "priority", default: 0, null: false
+    t.jsonb "score_counts", default: {}, null: false
     t.index ["poll_id", "name"], name: "index_poll_options_on_poll_id_and_name"
     t.index ["poll_id", "priority"], name: "index_poll_options_on_poll_id_and_priority"
     t.index ["poll_id"], name: "index_poll_options_on_poll_id"
     t.index ["priority"], name: "index_poll_options_on_priority"
-  end
-
-  create_table "poll_references", id: :serial, force: :cascade do |t|
-    t.integer "reference_id", null: false
-    t.string "reference_type", null: false
-    t.integer "poll_id", null: false
-    t.index ["poll_id"], name: "index_poll_references_on_poll_id"
   end
 
   create_table "poll_unsubscriptions", id: :serial, force: :cascade do |t|
